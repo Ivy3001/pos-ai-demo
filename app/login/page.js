@@ -11,8 +11,6 @@ export default function LoginPage() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    // TODO(backend): replace with a real auth call, e.g.
-    // POST /api/auth/login { associateId, pin } -> session/JWT
     if (!associateId || pin.length < 4) {
       setError('Enter your associate ID and a 4-digit PIN.');
       return;

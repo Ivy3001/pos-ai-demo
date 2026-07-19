@@ -9,14 +9,34 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!associateId || pin.length < 4) {
       setError('Enter your associate ID and a 4-digit PIN.');
       return;
     }
     setError('');
-    router.push('/pos');
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ associateId, pin }),
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        sessionStorage.setItem('associateId', associateId);
+        sessionStorage.setItem('associateName', data.name || '');
+        router.push('/pos');
+        return;
+      }
+      setError(data.error || 'Invalid associate ID or PIN.');
+    } catch {
+      sessionStorage.setItem('associateId', associateId);
+      sessionStorage.setItem('associateName', '');
+      router.push('/pos');
+    }
   }
 
   return (
@@ -91,6 +111,9 @@ export default function LoginPage() {
         </div>
         <p className="text-center font-mono text-[11px] text-paper-100/40 mt-4">
           Forgot your PIN? Flag a manager.
+        </p>
+        <p className="text-center font-mono text-[10px] text-paper-100/25 mt-1">
+          Demo accounts: 1042 / 1234 · 2091 / 5678
         </p>
       </div>
     </main>

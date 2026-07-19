@@ -1,58 +1,42 @@
 'use client';
 
-import { useState } from 'react';
-import { CATEGORIES, PRODUCTS } from '@/lib/mockProducts';
+import { PRODUCTS } from '@/lib/mockProducts';
 
-export default function ProductGrid({ onAdd }) {
-  const [active, setActive] = useState('Fresh Cuts');
-  const items = PRODUCTS.filter((p) => p.category === active);
+export default function ProductGrid({ activeCategory, searchTerm, onSelect }) {
+  const term = searchTerm.trim().toLowerCase();
+  const items = PRODUCTS.filter((p) => {
+    const matchesCategory = activeCategory === 'All products' || p.category === activeCategory;
+    const matchesSearch =
+      !term || p.name.toLowerCase().includes(term) || p.brand.toLowerCase().includes(term);
+    return matchesCategory && matchesSearch;
+  });
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
-      <div className="flex gap-1 px-6 pt-5 shrink-0 overflow-x-auto">
-        {CATEGORIES.map((cat) => (
+    <div className="flex-1 overflow-y-auto px-6 pb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {items.map((p) => (
           <button
-            key={cat}
-            onClick={() => setActive(cat)}
-            className={`font-mono text-xs uppercase tracking-wider px-4 py-2 whitespace-nowrap transition-colors border-b-2 ${
-              active === cat
-                ? 'border-oxblood-500 text-paper-50'
-                : 'border-transparent text-paper-50/40 hover:text-paper-50/70'
-            }`}
+            key={p.id}
+            onClick={() => onSelect(p)}
+            className="text-left bg-cream-50 text-charcoal-900 rounded-xl p-4 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
           >
-            {cat}
+            <p className="font-extrabold text-sm leading-tight">{p.name}</p>
+            <p className="text-sm font-semibold text-charcoal-900/70 mt-1">
+              ${p.pricePerUnit.toFixed(2)}
+            </p>
+            <div className="mt-2 aspect-square w-full max-w-[110px] rounded-lg bg-charcoal-900/10 flex items-center justify-center text-3xl">
+              {p.emoji}
+            </div>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-charcoal-900/40 mt-2">
+              {p.inputMode === 'weight' ? 'Weighed' : 'Weighed/Quantity'}
+            </p>
           </button>
         ))}
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-6 py-5">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {items.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => onAdd(p)}
-              className="group relative text-left bg-ink-900 hover:bg-ink-800 border border-paper-50/10 hover:border-oxblood-500/50 px-4 py-4 transition-colors"
-            >
-              {p.tag && (
-                <span className="absolute top-2 right-2 text-[10px] font-mono uppercase tracking-wider text-sage-500">
-                  {p.tag}
-                </span>
-              )}
-              <p className="font-display font-medium text-sm text-paper-50 leading-snug pr-8">
-                {p.name}
-              </p>
-              {p.allergens.length > 0 && (
-                <p className="text-[10px] font-mono uppercase tracking-wide text-mustard-500 mt-1">
-                  Contains: {p.allergens.join(', ')}
-                </p>
-              )}
-              <p className="font-mono text-sm text-steel-300 mt-3">
-                ${p.price.toFixed(2)}{' '}
-                <span className="text-steel-400/60">/ {p.unit}</span>
-              </p>
-            </button>
-          ))}
-        </div>
+        {items.length === 0 && (
+          <p className="col-span-full text-cream-50/40 text-sm font-mono py-8 text-center">
+            No products match your search.
+          </p>
+        )}
       </div>
     </div>
   );

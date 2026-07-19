@@ -6,42 +6,35 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: {
-          950: '#211C18',
-          900: '#2A2420',
-          800: '#3A322C',
+        charcoal: {
+          950: '#1E1E1E',
+          900: '#242424',
+          800: '#2E2E2E',
+          700: '#3A3A3A',
+          600: '#484848',
         },
-        paper: {
-          50: '#F5F0E4',
-          100: '#EFE8D8',
-          200: '#E4DAC2',
+        cream: {
+          50: '#FFFCF8',
+          100: '#FDF9F3',
+          200: '#E9E5DF',
         },
-        oxblood: {
-          700: '#5E1C1E',
-          600: '#7A2426',
-          500: '#93302F',
+        mint: {
+          600: '#3FB894',
+          500: '#5AD3B0',
+          400: '#7ADFC4',
         },
-        sage: {
-          700: '#3D4A2F',
-          600: '#4F5F3D',
-          500: '#647A4D',
+        leaf: {
+          600: '#3FA84A',
+          500: '#4CC759',
         },
-        mustard: {
-          600: '#A6690F',
-          500: '#C17817',
-        },
-        steel: {
-          400: '#8B9299',
-          300: '#AAB0B5',
+        coral: {
+          600: '#E24B4B',
+          500: '#F16565',
         },
       },
       fontFamily: {
-        display: ['var(--font-slab)'],
-        body: ['var(--font-inter)'],
-        mono: ['var(--font-mono)'],
-      },
-      backgroundImage: {
-        'perforate-x': 'repeating-linear-gradient(90deg, transparent, transparent 6px, var(--tw-gradient-stops) 6px, var(--tw-gradient-stops) 8px)',
+        sans: ['var(--font-inter)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
     },
   },

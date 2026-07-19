@@ -63,8 +63,6 @@ export default function Cart({ items, onRemove, onCheckout }) {
         >
           Charge Customer
         </button>
-        {/* TODO(backend): wire this to a real payment/checkout endpoint,
-            e.g. POST /api/checkout { items, total, associateId } */}
       </div>
     </div>
   );

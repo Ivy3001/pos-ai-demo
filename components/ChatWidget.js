@@ -54,7 +54,6 @@ export default function ChatWidget() {
     setInput('');
     setLoading(true);
 
-  
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',

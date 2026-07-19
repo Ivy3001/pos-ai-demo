@@ -5,14 +5,6 @@ Exposes POST /chat, matching the contract the Next.js proxy route expects:
     request:  { "message": str, "history": [{"role": str, "text": str}] }
     response: { "reply": str }
 
-Behavior:
-- If MISTRAL_API_KEY is set in the environment, real questions are answered
-  by Mistral, grounded in products.json (a copy of the frontend's mock
-  catalog) via a system prompt.
-- If no key is set (e.g. demoing before the real key is available), it
-  falls back to a catalog-aware rule-based responder so the demo still
-  works end-to-end instead of erroring out.
-
 Run locally:
     pip install -r requirements.txt
     uvicorn main:app --reload --port 8000
@@ -35,7 +27,6 @@ MISTRAL_MODEL = os.getenv("MISTRAL_MODEL", "mistral-small-latest")
 
 app = FastAPI(title="Counter POS AI Service")
 
-# Allow the Next.js dev server (and your deployed frontend) to call this.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -82,7 +73,7 @@ class CartItem(BaseModel):
     id: str
     name: str
     price: float
-    qty: int
+    qty: float
     unit: str
 
 
@@ -119,7 +110,7 @@ def call_mistral(message: str, history: list[Message]) -> str:
 
     client = Mistral(api_key=MISTRAL_API_KEY)
     messages = [{"role": "system", "content": build_system_prompt()}]
-    for m in history[-10:]:  # keep the payload small
+    for m in history[-10:]:
         role = "assistant" if m.role == "assistant" else "user"
         messages.append({"role": role, "content": m.text})
     messages.append({"role": "user", "content": message})
@@ -158,7 +149,6 @@ def fallback_reply(message: str) -> str:
             "(Demo mode — connect MISTRAL_API_KEY for full AI answers.)"
         )
 
-    # Plain product lookup (price/general info) as the last resort.
     for p in CATALOG:
         if p["name"].lower() in text:
             allergen_note = (

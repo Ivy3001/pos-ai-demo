@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-slab: 'Roboto Slab', ui-serif, Georgia, serif;
+  --font-inter: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+body {
+  font-family: var(--font-inter);
+}
+
+.ticket-edge {
+  height: 10px;
+  background-image: radial-gradient(circle at 8px 0px, transparent 6px, var(--tw-bg-opacity, 1) 6px);
+  background-color: transparent;
+  position: relative;
+}
+
+.ticket-edge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-radial-gradient(
+    circle at 0 0,
+    transparent 0,
+    transparent 5px,
+    #211C18 5px,
+    #211C18 6px
+  );
+  background-size: 16px 16px;
+  background-position: 0 -8px;
+}
+
+.stamp-badge {
+  border: 2px solid currentColor;
+  border-radius: 9999px;
+  transform: rotate(-6deg);
+  letter-spacing: 0.08em;
+}
+
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@keyframes slide-up {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-up {
+  animation: slide-up 0.18s ease-out;
+}

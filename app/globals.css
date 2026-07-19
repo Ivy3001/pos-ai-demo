@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 :root {
-  --font-slab: 'Roboto Slab', ui-serif, Georgia, serif;
   --font-inter: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 }
@@ -11,48 +10,42 @@
 body {
   font-family: var(--font-inter);
 }
-
-/* Torn / perforated ticket edge, used at the top of the cart ticket panel */
-.ticket-edge {
-  height: 10px;
-  background-image: radial-gradient(circle at 8px 0px, transparent 6px, var(--tw-bg-opacity, 1) 6px);
-  background-color: transparent;
-  position: relative;
+.arrow-btn {
+  clip-path: polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%);
 }
 
-.ticket-edge::before {
+.bubble-tail::after {
   content: '';
   position: absolute;
-  inset: 0;
-  background-image: repeating-radial-gradient(
-    circle at 0 0,
-    transparent 0,
-    transparent 5px,
-    #211C18 5px,
-    #211C18 6px
-  );
-  background-size: 16px 16px;
-  background-position: 0 -8px;
+  bottom: -8px;
+  left: 24px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid var(--tw-bubble-color, #FFFCF8);
 }
 
-.stamp-badge {
-  border: 2px solid currentColor;
-  border-radius: 9999px;
-  transform: rotate(-6deg);
-  letter-spacing: 0.08em;
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-.grain-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+.animate-fade-in {
+  animation: fade-in 0.15s ease-out;
 }
 
 @keyframes slide-up {
-  from { transform: translateY(12px); opacity: 0; }
+  from { transform: translateY(16px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 .animate-slide-up {
   animation: slide-up 0.18s ease-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 1s ease-in-out infinite;
 }

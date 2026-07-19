@@ -6,113 +6,111 @@ import { useRouter } from 'next/navigation';
 export default function LoginPage() {
   const [associateId, setAssociateId] = useState('');
   const [pin, setPin] = useState('');
+  const [barcode, setBarcode] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    if (!associateId || pin.length < 4) {
-      setError('Enter your associate ID and a 4-digit PIN.');
-      return;
-    }
+  async function attemptLogin(id, password) {
     setError('');
-
+    setLoading(true);
     try {
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ associateId, pin }),
+        body: JSON.stringify({ associateId: id, pin: password }),
       });
       const data = await res.json();
-
       if (data.ok) {
-        sessionStorage.setItem('associateId', associateId);
+        sessionStorage.setItem('associateId', id);
         sessionStorage.setItem('associateName', data.name || '');
         router.push('/pos');
         return;
       }
-      setError(data.error || 'Invalid associate ID or PIN.');
+      setError(data.error || 'Invalid user ID or password.');
     } catch {
-      sessionStorage.setItem('associateId', associateId);
+      sessionStorage.setItem('associateId', id);
       sessionStorage.setItem('associateName', '');
       router.push('/pos');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!associateId || !pin) {
+      setError('Enter your User ID and Password.');
+      return;
+    }
+    attemptLogin(associateId, pin);
+  }
+ function handleBarcodeKeyDown(e) {
+    if (e.key === 'Enter' && barcode.trim()) {
+      attemptLogin(barcode.trim(), '1234');
     }
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden">
-      <div className="grain-overlay" />
+    <main className="min-h-screen flex items-center justify-center px-6 bg-charcoal-900">
+      <div className="w-full max-w-md bg-cream-50 text-charcoal-900 rounded-3xl shadow-2xl px-10 py-10">
+        <h1 className="text-2xl font-extrabold tracking-tight text-center mb-8">
+          EMPLOYEE LOGIN
+        </h1>
 
-      <div className="w-full max-w-sm relative">
-        <div className="ticket-edge text-ink-950" />
-        <div className="bg-paper-100 text-ink-950 px-8 pt-8 pb-10 shadow-2xl">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <p className="font-mono text-xs tracking-widest text-ink-800/60 uppercase">
-                Station 04
-              </p>
-              <h1 className="font-display text-2xl font-bold mt-1">Clock In</h1>
-            </div>
-            <div className="stamp-badge w-14 h-14 flex items-center justify-center text-oxblood-600 font-display text-[10px] font-bold text-center leading-tight shrink-0">
-              COUNTER<br />POS
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wide mb-1.5">
+              User ID
+            </label>
+            <input
+              value={associateId}
+              onChange={(e) => setAssociateId(e.target.value)}
+              type="text"
+              className="w-full bg-charcoal-900/10 border-2 border-transparent focus:border-mint-500 outline-none rounded-lg px-4 py-3 text-sm transition-colors"
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label
-                htmlFor="associateId"
-                className="block font-mono text-xs uppercase tracking-wider text-ink-800/70 mb-1.5"
-              >
-                Associate ID
-              </label>
-              <input
-                id="associateId"
-                value={associateId}
-                onChange={(e) => setAssociateId(e.target.value)}
-                type="text"
-                inputMode="numeric"
-                placeholder="e.g. 1042"
-                className="w-full bg-paper-50 border-2 border-ink-950/15 focus:border-oxblood-600 outline-none rounded-none px-4 py-3 font-mono text-lg tracking-wide transition-colors"
-              />
-            </div>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wide mb-1.5">
+              Password
+            </label>
+            <input
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+              type="password"
+              className="w-full bg-charcoal-900/10 border-2 border-transparent focus:border-mint-500 outline-none rounded-lg px-4 py-3 text-sm transition-colors"
+            />
+          </div>
 
-            <div>
-              <label
-                htmlFor="pin"
-                className="block font-mono text-xs uppercase tracking-wider text-ink-800/70 mb-1.5"
-              >
-                PIN
-              </label>
-              <input
-                id="pin"
-                value={pin}
-                onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                type="password"
-                inputMode="numeric"
-                placeholder="••••"
-                className="w-full bg-paper-50 border-2 border-ink-950/15 focus:border-oxblood-600 outline-none rounded-none px-4 py-3 font-mono text-lg tracking-[0.5em] transition-colors"
-              />
-            </div>
+          {error && (
+            <p className="text-xs font-medium text-coral-600 text-center">{error}</p>
+          )}
 
-            {error && (
-              <p className="font-mono text-xs text-oxblood-600 border-l-2 border-oxblood-600 pl-2">
-                {error}
-              </p>
-            )}
+          <div className="pt-1">
+            <p className="text-center text-xs text-charcoal-900/50 mb-2">Or scan ID barcode</p>
+            <input
+              value={barcode}
+              onChange={(e) => setBarcode(e.target.value)}
+              onKeyDown={handleBarcodeKeyDown}
+              type="text"
+              placeholder=""
+              className="w-full bg-charcoal-900/10 border-2 border-transparent focus:border-mint-500 outline-none rounded-lg px-4 py-3 text-sm transition-colors"
+            />
+          </div>
 
+          <div className="flex justify-center pt-3">
             <button
               type="submit"
-              className="w-full bg-oxblood-600 hover:bg-oxblood-700 active:translate-y-px text-paper-50 font-display font-bold tracking-wide py-3.5 transition-colors"
+              disabled={loading}
+              className="bg-mint-500 hover:bg-mint-600 disabled:opacity-50 text-charcoal-900 font-extrabold tracking-wide rounded-full px-12 py-3 text-sm transition-colors"
             >
-              Start Shift
+              {loading ? '...' : 'SUBMIT'}
             </button>
-          </form>
-        </div>
-        <p className="text-center font-mono text-[11px] text-paper-100/40 mt-4">
-          Forgot your PIN? Flag a manager.
-        </p>
-        <p className="text-center font-mono text-[10px] text-paper-100/25 mt-1">
+          </div>
+        </form>
+
+        <p className="text-center text-[11px] text-charcoal-900/40 mt-6">
           Demo accounts: 1042 / 1234 · 2091 / 5678
         </p>
       </div>

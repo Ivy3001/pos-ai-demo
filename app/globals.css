@@ -12,6 +12,7 @@ body {
   font-family: var(--font-inter);
 }
 
+/* Torn / perforated ticket edge, used at the top of the cart ticket panel */
 .ticket-edge {
   height: 10px;
   background-image: radial-gradient(circle at 8px 0px, transparent 6px, var(--tw-bg-opacity, 1) 6px);
@@ -40,7 +41,6 @@ body {
   transform: rotate(-6deg);
   letter-spacing: 0.08em;
 }
-
 .grain-overlay {
   position: absolute;
   inset: 0;

@@ -1,3 +1,4 @@
+@'
 """
 Counter POS — AI chat service.
 
@@ -203,8 +204,10 @@ def chat(req: ChatRequest):
     if MISTRAL_API_KEY:
         try:
             return ChatResponse(reply=call_mistral(req.message, req.history))
-        except Exception:
+        except Exception as e:
+            print(f"[Mistral call failed] {type(e).__name__}: {e}")
             return ChatResponse(
                 reply=f"(Mistral call failed, falling back) {fallback_reply(req.message)}"
             )
     return ChatResponse(reply=fallback_reply(req.message))
+'@ | Set-Content -Encoding utf8 main.py

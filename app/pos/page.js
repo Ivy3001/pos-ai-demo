@@ -2,14 +2,26 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Sidebar from '@/components/Sidebar';
+import SearchBar from '@/components/SearchBar';
 import ProductGrid from '@/components/ProductGrid';
-import Cart from '@/components/Cart';
+import CheckoutPanel from '@/components/CheckoutPanel';
+import ProductEntryModal from '@/components/ProductEntryModal';
+import FinalReceiptModal from '@/components/FinalReceiptModal';
+import ProcessingOverlay from '@/components/ProcessingOverlay';
 import ChatWidget from '@/components/ChatWidget';
 
+let cartIdCounter = 0;
+
 export default function PosPage() {
-  const [cartItems, setCartItems] = useState([]);
   const [associate, setAssociate] = useState({ id: '', name: '' });
-  const [checkoutStatus, setCheckoutStatus] = useState(null);
+  const [activeCategory, setActiveCategory] = useState('All products');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [cartItems, setCartItems] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -18,32 +30,40 @@ export default function PosPage() {
       router.replace('/login');
       return;
     }
-    setAssociate({
-      id,
-      name: sessionStorage.getItem('associateName') || '',
-    });
+    setAssociate({ id, name: sessionStorage.getItem('associateName') || '' });
   }, [router]);
 
-  function handleAdd(product) {
-    setCartItems((items) => {
-      const existing = items.find((i) => i.id === product.id);
-      if (existing) {
-        return items.map((i) => (i.id === product.id ? { ...i, qty: i.qty + 1 } : i));
-      }
-      return [...items, { ...product, qty: 1 }];
-    });
+  function handleAddToCart({ qty, unitPrice }) {
+    const p = selectedProduct;
+    cartIdCounter += 1;
+    setCartItems((items) => [
+      ...items,
+      {
+        cartId: cartIdCounter,
+        id: p.id,
+        name: p.name,
+        brand: p.brand,
+        unit: p.unit,
+        qty,
+        price: qty * unitPrice,
+      },
+    ]);
+    setSelectedProduct(null);
   }
 
-  function handleRemove(id) {
-    setCartItems((items) => items.filter((i) => i.id !== id));
+  function handleRemove(cartId) {
+    setCartItems((items) => items.filter((i) => i.cartId !== cartId));
   }
 
-  async function handleCheckout() {
+  async function handleConfirmCheckout() {
+    setShowReceipt(false);
+    setProcessing(true);
+
     const payload = {
       items: cartItems.map((i) => ({
         id: i.id,
         name: i.name,
-        price: i.price,
+        price: i.qty > 0 ? i.price / i.qty : i.price,
         qty: i.qty,
         unit: i.unit,
       })),
@@ -51,48 +71,62 @@ export default function PosPage() {
     };
 
     try {
-      const res = await fetch('/api/checkout', {
+      await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      if (data.ok) {
-        setCheckoutStatus(`Order ${data.orderId} recorded — $${data.total.toFixed(2)}`);
-      } else {
-        setCheckoutStatus('Checkout failed — try again.');
-      }
     } catch {
-      setCheckoutStatus('Checkout service unreachable (offline demo mode).');
     }
 
-    setCartItems([]);
-    setTimeout(() => setCheckoutStatus(null), 4000);
+    setTimeout(() => {
+      setProcessing(false);
+      setCartItems([]);
+    }, 1200);
   }
 
   return (
-    <main className="h-screen flex flex-col bg-ink-950">
-      <header className="flex items-center justify-between px-6 py-3 border-b border-paper-50/10 shrink-0">
-        <div>
-          <p className="font-mono text-[10px] uppercase tracking-widest text-paper-50/40">
-            Counter POS · Station 04
-          </p>
-          <h1 className="font-display font-bold text-lg text-paper-50">Sale in Progress</h1>
-        </div>
-        <div className="font-mono text-xs text-paper-50/50 text-right">
-          <div>Associate #{associate.id}</div>
-          {checkoutStatus && (
-            <div className="text-sage-500 mt-0.5">{checkoutStatus}</div>
-          )}
-        </div>
-      </header>
+    <main className="h-screen flex bg-charcoal-900 overflow-hidden">
+      <Sidebar
+        active={activeCategory}
+        onSelect={setActiveCategory}
+        onOpenChat={() => setChatOpen(true)}
+      />
 
-      <div className="flex-1 flex min-h-0 flex-col sm:flex-row">
-        <ProductGrid onAdd={handleAdd} />
-        <Cart items={cartItems} onRemove={handleRemove} onCheckout={handleCheckout} />
+      <div className="flex-1 flex flex-col min-w-0">
+        <SearchBar value={searchTerm} onChange={setSearchTerm} />
+        <ProductGrid
+          activeCategory={activeCategory}
+          searchTerm={searchTerm}
+          onSelect={setSelectedProduct}
+        />
       </div>
 
-      <ChatWidget />
+      <CheckoutPanel
+        items={cartItems}
+        onRemove={handleRemove}
+        onProceed={() => setShowReceipt(true)}
+      />
+
+      {selectedProduct && (
+        <ProductEntryModal
+          product={selectedProduct}
+          onCancel={() => setSelectedProduct(null)}
+          onConfirm={handleAddToCart}
+        />
+      )}
+
+      {showReceipt && (
+        <FinalReceiptModal
+          items={cartItems}
+          onNo={() => setShowReceipt(false)}
+          onYes={handleConfirmCheckout}
+        />
+      )}
+
+      {processing && <ProcessingOverlay onCancel={() => setProcessing(false)} />}
+
+      <ChatWidget open={chatOpen} onClose={() => setChatOpen(false)} />
     </main>
   );
 }

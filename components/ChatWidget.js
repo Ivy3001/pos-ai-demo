@@ -85,7 +85,7 @@ export default function ChatWidget({ open, onOpen, onClose }) {
             {messages.map((m, i) => (
               <div
                 key={i}
-                className={`max-w-[85%] px-3 py-2 rounded-lg text-sm leading-snug ${
+                className={`max-w-[85%] px-3 py-2 rounded-lg text-sm leading-snug whitespace-pre-line ${
                   m.role === 'user'
                     ? 'ml-auto bg-mint-500 text-charcoal-900'
                     : 'bg-charcoal-700 text-cream-50'

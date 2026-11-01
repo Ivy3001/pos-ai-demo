@@ -3,8 +3,6 @@ venv/
 __pycache__/
 *.pyc
 
-# Secrets
 .env
 
-# Local demo data
 orders.json
